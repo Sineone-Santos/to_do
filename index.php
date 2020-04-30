@@ -15,7 +15,14 @@
 <div class="box-info">
 	<div class="number-task">
 		<div class="itens">
-			<h1 class="title-item">10</h1>
+			<?php
+				require_once 'db.php';
+				$result = totalTask();
+
+				if (!is_null($result)) {
+					echo "<h1 class='title-item'>".$result['total']."</h1>";
+				}
+			?>
 			<label class="info">A completar</label>
 		</div>
 		<div class="itens">
@@ -29,10 +36,10 @@
 	</div>
 </div>
 
-<form method="POST" action="db.php">
+<form method="POST" action="db.php" id="formAddTask">
 	<div class="box-add-task">		
-			<input type="submit" name="enviar" class="btn-add-task" id="addtask" value="+">
-			<input type="text" name="descricao" placeholder="Adicione aqui a descrição..." class="add-desc">
+			<input type="submit" name="enviar" onclick="taskValue();" class="btn-add-task" id="addtask" value="+">
+			<input type="text" id="task" name="descricao" placeholder="Adicione aqui a descrição..." class="add-desc">
 	</div>
 </form>
 
@@ -46,6 +53,10 @@
 			<tr>
 				<td>*</td>
 				<td>Tarefas de hoje</td>
+				<td>Completas</td>
+				<td>Editar</td>
+				<td>Excluir</td>
+	
 			</tr>
 		</thead>
 		<tbody id="conteudo">
@@ -58,14 +69,43 @@
 					foreach ($list as $value) {
 						echo "<tr><td>".$value['cod']."</td>".
 							  "<td>".$value['descricao']."</td>".
-							  "<td>".$value['DATAS']."</td></tr>";
+							  "<td>".
+							  "<input type='checkbox' name='completa' id='completa'>"."</td>"."<td>"."<button id='btn-edite'><img src='img/editar.png'</button>"."</td>"."<td>"."<button id='btn-delete'><img src='img/lixeira.png'</button>"."</td></tr>";
 					}
 				}
-
 			?>
 		</tbody>
 	</table>
 </div>
+
+<script type="application/javascript">
+		
+	function stopSubmit(){
+		event.preventDefault();
+	}
+
+	function taskValue(){
+
+		var valor = document.getElementById("task").value;
+
+		if (valor == "") {
+			document.getElementById("task").classList.remove("add-desc");
+			document.getElementById("task").classList.add("add-desc-error");
+			document.getElementById("task").placeholder='Esse campo não pode ficar vazio..';
+			document.getElementById("formAddTask").addEventListener("click", stopSubmit());
+		}else{
+			
+		}
+	}
+	document.getElementById("task").addEventListener('keypress', function(){
+
+	document.getElementById("task").classList.remove("add-desc-error");
+	document.getElementById("task").classList.add("add-desc");
+	document.getElementById("task").placeholder='Adicione aqui a descrição...';
+	document.getElementById("formAddTask").removeEventListener();
+	});
+
+</script>
 
 </body>
 </html>

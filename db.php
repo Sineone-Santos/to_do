@@ -20,7 +20,6 @@
 		$con = null;
 	}
 
-
 	global $cod;
 	$cod = 0;
 	
@@ -40,20 +39,14 @@
 			global $con;
 
 			openConnection();
-				$sql = "SELECT cod FROM task
-							WHERE cod = (SELECT MAX(cod)FROM task)";
+				$sql = "SELECT MAX(cod) as valor FROM task";
 				$sth = $con->prepare($sql);
 				$sth->execute();
-				$result = $sth->fetchAll();
+				$result = $sth->fetch();
 				$sth = null;
-			closeConnection();
-			$_REQUEST['result'] = $result;
-			$list = $_REQUEST['result'];
-		foreach($list as $value){
-			global $cod;
-			$cod = $value['cod'];
-			$cod +=1;
-	}
+				return $result;
+			closeConnection();		
+		}
 
 	function addTask(){
 				global $con;
@@ -63,20 +56,40 @@
 				date_default_timezone_set('America/Sao_Paulo');
 				$data = date('d/m/y/ H:i:s');
 				$desc = $_POST['descricao'];
-				$sql = "INSERT INTO task (cod, descricao, data) VALUES (?, ?, ?)";
+				$sql = "INSERT INTO task (cod, descricao, DATAS) VALUES (?, ?, ?)";
 				$sth = $con->prepare($sql);
 				$sucess = $sth->execute(array($cod, $desc, $data));
 				$sth = null;
 				return $sucess;
 				closeConnection();
-				header('location: index.php');
 		}	
 
 	if(isset($_POST['descricao'])){
 
-		selectCod();
-		
+		$result = selectCod();
+		if(!is_null($result)){
+				global $cod;
+				$cod = $result['valor'];
+				$cod +=1;
+				addtask();	
 		}		
-		addtask();
+		header('location: index.php');
 	}
+
+///////// CONTAR TABELA /////////
+
+	function totalTask(){
+		global $con;
+
+		openConnection();
+		$sql = "select count(*) as total from task";
+		$sth = $con->prepare($sql);
+		$sth->execute();
+		$result = $sth->fetch();
+		$sth = null;
+		return $result;
+		closeConnection();
+	}
+
+
 ?>

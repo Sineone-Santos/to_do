@@ -38,8 +38,8 @@
 
 <form method="POST" action="db.php" id="formAddTask">
 	<div class="box-add-task">		
-			<input type="submit" name="enviar" onclick="taskValue();" class="btn-add-task" id="addtask" value="+">
-			<input type="text" id="task" name="descricao" placeholder="Adicione aqui a descrição..." class="add-desc">
+			<input  type="submit" name="enviar" onclick="insertTask()" class="btn-add-task" id="addtask" value="+">
+			<input data-id="" type="text" id="task" name="descricao" placeholder="Adicione aqui a descrição..." class="add-desc">
 	</div>
 </form>
 
@@ -67,10 +67,14 @@
 
 				if (!is_null($list)) {
 					foreach ($list as $value) {
-						echo "<tr><td>".$value['cod']."</td>".
+						echo "<tr>"
+							."<td>".$value['cod']."</td>".
 							  "<td>".$value['descricao']."</td>".
 							  "<td>".
-							  "<input type='checkbox' name='completa' id='completa'>"."</td>"."<td>"."<button id='btn-edite'><img src='img/editar.png'</button>"."</td>"."<td>"."<button id='btn-delete'><img src='img/lixeira.png'</button>"."</td></tr>";
+							  "<input type='checkbox' name='completa' id='completa'>".
+							  "</td>"."<td>"."<button data-descricao='{$value['descricao']}' data-id='{$value['id']}' class='btn-edite'><img src='img/editar.png'</button>"."</td>".
+							  "<td>"."<button data-id='{$value['id']}' class='btn-delete'>"."<img src='img/lixeira.png'>"."</button>"."</td>".
+							  "</tr>";
 					}
 				}
 			?>
@@ -78,33 +82,119 @@
 	</table>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.2/axios.js"></script>
+
+
 <script type="application/javascript">
 		
 	function stopSubmit(){
 		event.preventDefault();
 	}
 
+	function deleteTask(id){
+		
+		var params = {
+			id: id,
+			deletar: true
+		};
+
+		axios.post('db.php', params)
+		.then(function (response) {
+    		console.log(response);
+  		})
+  		.catch(function (error) {
+   			console.log(error);
+  		});
+
+  		setTimeout(function(){
+  			window.location.reload();
+  		}, 10);
+	}
+
 	function taskValue(){
 
+		document.getElementById("formAddTask").addEventListener("click", stopSubmit());
 		var valor = document.getElementById("task").value;
 
 		if (valor == "") {
 			document.getElementById("task").classList.remove("add-desc");
 			document.getElementById("task").classList.add("add-desc-error");
 			document.getElementById("task").placeholder='Esse campo não pode ficar vazio..';
-			document.getElementById("formAddTask").addEventListener("click", stopSubmit());
 		}else{
-			
+			var descricao = document.getElementById('task').value;
+
+			params = {
+				descricao: descricao,
+				inserir: true
+			};
+
+			axios.post('db.php', params)
+			.then(function(response){
+				console.log(response)
+			})
+			.catch(function(error){
+				console.log(error);
+			});
+			setTimeout(function(){
+  			window.location.reload();
+  		}, 10);
 		}
 	}
 	document.getElementById("task").addEventListener('keypress', function(){
 
-	document.getElementById("task").classList.remove("add-desc-error");
-	document.getElementById("task").classList.add("add-desc");
-	document.getElementById("task").placeholder='Adicione aqui a descrição...';
-	document.getElementById("formAddTask").removeEventListener();
+		document.getElementById("task").classList.remove("add-desc-error");
+		document.getElementById("task").classList.add("add-desc");
+		document.getElementById("task").placeholder='Adicione aqui a descrição...';
+		document.getElementById("formAddTask").removeEventListener();
 	});
 
+
+	function updateTask(){
+
+		var descricao = document.getElementById('task').value;
+		var id = document.getElementById('task').dataset.id;
+
+			params = {
+				id: id,
+				descricao: descricao
+			};
+			axios.post('db.php', params)
+			.then(function(response){
+				console.log(response)
+			})
+			.catch(function(error){
+				console.log(error);
+
+			});
+			document.getElementById('task').dataset.id = "";
+			setTimeout(function(){
+  				window.location.reload();
+  			}, 10);	
+	}
+
+	const btnsD = document.getElementsByClassName("btn-delete");
+	const btnsE = document.getElementsByClassName("btn-edite");
+
+	for(btn of btnsD){
+		btn.onclick = function(){
+			deleteTask(this.dataset.id);
+		}
+	}
+	for(btn of btnsE){
+		btn.onclick = function(){
+			document.getElementById('task').value = this.dataset.descricao;
+			document.getElementById('task').dataset.id = this.dataset.id;	
+		}
+	}
+	function insertTask(){
+		var id = document.getElementById('task').dataset.id;
+
+		if (id == "") {
+			taskValue();
+		}else{
+			updateTask();
+		}
+	}
 </script>
 
 </body>

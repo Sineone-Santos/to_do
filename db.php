@@ -22,6 +22,9 @@
 
 	global $cod;
 	$cod = 0;
+
+
+///////// INSERT TASK /////////
 	
 	function listAll(){
 			openConnection();
@@ -34,6 +37,8 @@
 			return $result;
 			closeConnection();
 		}
+
+///////// INSERT TASK /////////
 
 	function selectCod(){
 			global $con;
@@ -64,17 +69,6 @@
 				closeConnection();
 		}	
 
-	if(isset($_POST['descricao'])){
-
-		$result = selectCod();
-		if(!is_null($result)){
-				global $cod;
-				$cod = $result['valor'];
-				$cod +=1;
-				addtask();	
-		}		
-		header('location: index.php');
-	}
 
 ///////// CONTAR TABELA /////////
 
@@ -91,5 +85,61 @@
 		closeConnection();
 	}
 
+	///////// DELETE TASK /////////
+
+	function deleteTask(){
+		global $con;
+		$id = $_POST['id'];
+
+		openConnection();
+		$sql = "delete from task where id = ".$id;
+		$sth = $con->prepare($sql);
+		$result = $sth->execute();
+		$sth = null;
+		return $result;
+		closeConnection();
+	}
+
+	///////// UPDATE TASK /////////
+
+	function updateTask(){
+		global $con;
+		$id = $_POST['id'];
+		$descricao = $_POST['descricao'];
+
+		openConnection();
+		$sql = "update task set descricao = "."'".$descricao."'"." "."where id = ".$id;
+		$sth = $con->prepare($sql);
+		$result = $sth->execute();
+		$sth = null;
+		return $result;
+		closeConnection();
+	}
+
+	
+
+	$_POST = json_decode(file_get_contents("php://input"), true);
+
+	if(isset($_POST['id']) && isset($_POST['descricao'])){
+
+		updateTask();
+
+	}else if (isset($_POST['deletar']) && isset($_POST['id'])){
+
+		deleteTask();
+
+	}else if(isset($_POST['inserir']) && isset($_POST['descricao'])){
+
+		$result = selectCod();
+		echo "teste";
+		if(!is_null($result)){
+				global $cod;
+				$cod = $result['valor'];
+				$cod +=1;
+				addtask();	
+		}
+
+		
+	}
 
 ?>
